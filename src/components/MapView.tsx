@@ -44,6 +44,7 @@ const FILL_COLOR = [
 type Props = {
   selectedDep: string | null
   facility: FacilityProperties | null
+  facilities: FacilityProperties[]
   onSelectDepartment: (name: string) => void
   onSelectFacility: (facility: FacilityProperties) => void
 }
@@ -53,6 +54,7 @@ type PinEntry = { marker: Marker; el: HTMLButtonElement }
 export function MapView({
   selectedDep,
   facility,
+  facilities,
   onSelectDepartment,
   onSelectFacility,
 }: Props) {
@@ -61,6 +63,7 @@ export function MapView({
   const mapRef = useRef<MapLibre | null>(null)
   const selectedDepRef = useRef(selectedDep)
   const facilityRef = useRef(facility)
+  const facilitiesRef = useRef(facilities)
   const onSelectDepartmentRef = useRef(onSelectDepartment)
   const onSelectFacilityRef = useRef(onSelectFacility)
   const flightRef = useRef(0)
@@ -69,13 +72,15 @@ export function MapView({
   const departmentsRef = useRef<DepartmentFeature[]>([])
   const fitDepartmentRef = useRef<(name: string, duration: number) => void>(() => {})
   const prevFacilityRef = useRef<FacilityProperties | null>(null)
+  const basemapVisibleRef = useRef(false)
 
   useEffect(() => {
     selectedDepRef.current = selectedDep
     facilityRef.current = facility
+    facilitiesRef.current = facilities
     onSelectDepartmentRef.current = onSelectDepartment
     onSelectFacilityRef.current = onSelectFacility
-  }, [selectedDep, facility, onSelectDepartment, onSelectFacility])
+  }, [selectedDep, facility, facilities, onSelectDepartment, onSelectFacility])
 
   useEffect(() => {
     if (!rootRef.current || mapRef.current) return
@@ -316,6 +321,7 @@ export function MapView({
     }
 
     const flyToPeru = () => {
+      basemapVisibleRef.current = false
       source()?.setData(EMPTY)
       placePinsRef.current(EMPTY)
       showBasemap(false)
@@ -327,41 +333,24 @@ export function MapView({
       })
     }
 
-    const fitDepartment = (name: string) => {
-      const feat = departmentsRef.current.find((f) => f.properties.NOMBDEP === name)
-      if (!feat) return
-      const bounds = boundsFromCoordinates(feat.geometry.coordinates)
-      map.fitBounds(bounds, {
-        padding: 32,
-        duration,
-        easing: easeInOutStrong,
-        essential: true,
-      })
-    }
-
-    const run = async () => {
+    const run = () => {
       if (!selectedDep) {
         flyToPeru()
         return
       }
-      const res = await fetch(
-        new URL(
-          `/data/establecimientos/${selectedDep.replaceAll(' ', '_')}.geojson`,
-          window.location.origin,
-        ).href,
-      )
-      if (flightRef.current !== flight) return
-      const data = (await res.json()) as FacilityCollection
       if (flightRef.current !== flight) return
       source()?.setData(EMPTY)
+      basemapVisibleRef.current = false
       showBasemap(false)
       const reveal = () => {
         if (flightRef.current !== flight) return
+        basemapVisibleRef.current = true
         showBasemap(true)
+        const data = toCollection(facilitiesRef.current)
         source()?.setData(data)
         placePinsRef.current(data)
       }
-      if (!facilityRef.current) fitDepartment(selectedDep)
+      if (!facilityRef.current) fitDepartmentRef.current(selectedDep, duration)
       if (duration === 0) reveal()
       else window.setTimeout(reveal, duration + 40)
     }
@@ -371,10 +360,20 @@ export function MapView({
         map.once('idle', kick)
         return
       }
-      void run()
+      run()
     }
     kick()
   }, [selectedDep])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !selectedDep) return
+    if (!basemapVisibleRef.current) return
+    const data = toCollection(facilities)
+    const src = map.getSource('establecimientos') as GeoJSONSource | undefined
+    src?.setData(data)
+    placePinsRef.current(data)
+  }, [facilities, selectedDep])
 
   useEffect(() => {
     const selected = String(facility?.objectid ?? '')
@@ -422,6 +421,17 @@ function safeQuery(map: MapLibre, point: Point, layers: string[]) {
     return map.queryRenderedFeatures(point, { layers: available })
   } catch {
     return []
+  }
+}
+
+function toCollection(facilities: FacilityProperties[]): FacilityCollection {
+  return {
+    type: 'FeatureCollection',
+    features: facilities.map((f) => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [f.lng, f.lat] },
+      properties: f,
+    })),
   }
 }
 

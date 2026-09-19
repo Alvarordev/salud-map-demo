@@ -178,6 +178,43 @@ a {
   max-width: 48ch;
 }
 
+.sector-filter {
+  margin: 14px 0 4px;
+}
+
+.sector-filter-bar {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.sector-filter-btn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, transform 160ms var(--ease-out);
+}
+
+.sector-filter-btn.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sector-filter-btn:active {
+  transform: scale(0.97);
+}
+
+.sector-filter-meta {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .tab-bar {
   display: flex;
   gap: 4px;
@@ -331,7 +368,8 @@ a {
 
 @media (hover: hover) and (pointer: fine) {
   .back:hover,
-  .tab:hover {
+  .tab:hover,
+  .sector-filter-btn:hover {
     background: var(--accent-soft);
   }
 }
@@ -351,7 +389,8 @@ a {
 @media (prefers-reduced-motion: reduce) {
   .tab-track,
   .back,
-  .tab {
+  .tab,
+  .sector-filter-btn {
     transition-duration: 0ms;
   }
 

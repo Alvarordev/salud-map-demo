@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { DetailPanel } from './components/DetailPanel'
 import { MapView } from './components/MapView'
+import { matchesSectorFilter, type SectorFilter } from './lib/facility'
 import type { DepartmentIndex, FacilityProperties, PanelTab } from './lib/types'
 
 export default function App() {
@@ -8,7 +9,13 @@ export default function App() {
   const [selectedDep, setSelectedDep] = useState<string | null>(null)
   const [facility, setFacility] = useState<FacilityProperties | null>(null)
   const [facilities, setFacilities] = useState<FacilityProperties[]>([])
+  const [sectorFilter, setSectorFilter] = useState<SectorFilter>('all')
   const [tab, setTab] = useState<PanelTab>('ficha')
+
+  const visibleFacilities = useMemo(
+    () => facilities.filter((f) => matchesSectorFilter(f, sectorFilter)),
+    [facilities, sectorFilter],
+  )
 
   useEffect(() => {
     void fetch(new URL('/data/index.json', window.location.origin))
@@ -35,9 +42,18 @@ export default function App() {
       })
   }, [selectedDep])
 
+  useEffect(() => {
+    if (!facility) return
+    if (!visibleFacilities.some((f) => String(f.objectid) === String(facility.objectid))) {
+      setFacility(null)
+      setTab('ficha')
+    }
+  }, [visibleFacilities, facility])
+
   const onSelectDepartment = useCallback((name: string) => {
     setSelectedDep(name)
     setFacility(null)
+    setSectorFilter('all')
     setTab('ficha')
   }, [])
 
@@ -47,14 +63,11 @@ export default function App() {
   }, [])
 
   const onBack = useCallback(() => {
-    if (facility) {
-      setFacility(null)
-      setTab('ficha')
-      return
-    }
     setSelectedDep(null)
+    setFacility(null)
+    setSectorFilter('all')
     setTab('ficha')
-  }, [facility])
+  }, [])
 
   return (
     <div className="app">
@@ -64,17 +77,8 @@ export default function App() {
           <h1>Establecimientos de salud</h1>
         </div>
         {selectedDep ? (
-          <button
-            type="button"
-            className="back"
-            onClick={onBack}
-            aria-label={
-              facility
-                ? `Volver a ${titleCase(selectedDep)}`
-                : 'Volver a Perú'
-            }
-          >
-            {facility ? `← ${titleCase(selectedDep)}` : '← Perú'}
+          <button type="button" className="back" onClick={onBack}>
+            Perú
           </button>
         ) : (
           <p className="topbar-meta">16 624 centros · 25 departamentos</p>
@@ -84,6 +88,7 @@ export default function App() {
         <MapView
           selectedDep={selectedDep}
           facility={facility}
+          facilities={visibleFacilities}
           onSelectDepartment={onSelectDepartment}
           onSelectFacility={onSelectFacility}
         />
@@ -92,7 +97,10 @@ export default function App() {
           facility={facility}
           tab={tab}
           departments={index}
-          facilities={facilities}
+          facilities={visibleFacilities}
+          totalFacilities={facilities.length}
+          sectorFilter={sectorFilter}
+          onSectorFilter={setSectorFilter}
           onTab={setTab}
           onSelectDepartment={onSelectDepartment}
           onSelectFacility={onSelectFacility}
@@ -100,12 +108,4 @@ export default function App() {
       </div>
     </div>
   )
-}
-
-function titleCase(value: string): string {
-  return value
-    .toLowerCase()
-    .split(' ')
-    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
-    .join(' ')
 }

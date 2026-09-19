@@ -1,4 +1,6 @@
+import { SectorFilterBar } from './SectorFilter'
 import { officialRenipressUrl, toProxiedRenipressUrl } from '../lib/renipress'
+import type { SectorFilter } from '../lib/facility'
 import type { DepartmentIndex, FacilityProperties, PanelTab } from '../lib/types'
 
 type Props = {
@@ -7,6 +9,9 @@ type Props = {
   tab: PanelTab
   departments: DepartmentIndex[]
   facilities: FacilityProperties[]
+  totalFacilities: number
+  sectorFilter: SectorFilter
+  onSectorFilter: (filter: SectorFilter) => void
   onTab: (tab: PanelTab) => void
   onSelectDepartment: (name: string) => void
   onSelectFacility: (facility: FacilityProperties) => void
@@ -18,6 +23,9 @@ export function DetailPanel({
   tab,
   departments,
   facilities,
+  totalFacilities,
+  sectorFilter,
+  onSectorFilter,
   onTab,
   onSelectDepartment,
   onSelectFacility,
@@ -52,11 +60,18 @@ export function DetailPanel({
         <p className="panel-lead">
           Selecciona un establecimiento en el mapa o en la lista para ver la ficha y RENIPRESS.
         </p>
+        <SectorFilterBar
+          value={sectorFilter}
+          visible={facilities.length}
+          total={totalFacilities}
+          onChange={onSectorFilter}
+        />
         <ul className="dep-list">
           {facilities.map((row) => (
             <li key={String(row.objectid)}>
               <button type="button" onClick={() => onSelectFacility(row)}>
                 <span>{row.nombre || 'Sin nombre'}</span>
+                <span className="dep-count">{row.institucion === 'PRIVADO' ? 'Privado' : 'Público'}</span>
               </button>
             </li>
           ))}
@@ -72,6 +87,14 @@ export function DetailPanel({
 
   return (
     <aside className="panel">
+      {department ? (
+        <SectorFilterBar
+          value={sectorFilter}
+          visible={facilities.length}
+          total={totalFacilities}
+          onChange={onSectorFilter}
+        />
+      ) : null}
       <div className="tab-bar" role="tablist" aria-label="Detalle">
         <button
           type="button"
