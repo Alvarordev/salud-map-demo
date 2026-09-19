@@ -24,8 +24,14 @@ export default function App() {
     const file = selectedDep.replaceAll(' ', '_')
     void fetch(new URL(`/data/establecimientos/${file}.geojson`, window.location.origin))
       .then((res) => res.json())
-      .then((data: { features: { properties: FacilityProperties }[] }) => {
-        setFacilities(data.features.map((f) => f.properties))
+      .then((data: { features: { geometry: { coordinates: [number, number] }; properties: FacilityProperties }[] }) => {
+        setFacilities(
+          data.features.map((f) => ({
+            ...f.properties,
+            lng: f.geometry.coordinates[0],
+            lat: f.geometry.coordinates[1],
+          })),
+        )
       })
   }, [selectedDep])
 
@@ -41,10 +47,14 @@ export default function App() {
   }, [])
 
   const onBack = useCallback(() => {
+    if (facility) {
+      setFacility(null)
+      setTab('ficha')
+      return
+    }
     setSelectedDep(null)
-    setFacility(null)
     setTab('ficha')
-  }, [])
+  }, [facility])
 
   return (
     <div className="app">
@@ -54,8 +64,17 @@ export default function App() {
           <h1>Establecimientos de salud</h1>
         </div>
         {selectedDep ? (
-          <button type="button" className="back" onClick={onBack}>
-            Perú
+          <button
+            type="button"
+            className="back"
+            onClick={onBack}
+            aria-label={
+              facility
+                ? `Volver a ${titleCase(selectedDep)}`
+                : 'Volver a Perú'
+            }
+          >
+            {facility ? `← ${titleCase(selectedDep)}` : '← Perú'}
           </button>
         ) : (
           <p className="topbar-meta">16 624 centros · 25 departamentos</p>
@@ -64,7 +83,7 @@ export default function App() {
       <div className="split">
         <MapView
           selectedDep={selectedDep}
-          selectedId={facility?.objectid ?? null}
+          facility={facility}
           onSelectDepartment={onSelectDepartment}
           onSelectFacility={onSelectFacility}
         />
@@ -81,4 +100,12 @@ export default function App() {
       </div>
     </div>
   )
+}
+
+function titleCase(value: string): string {
+  return value
+    .toLowerCase()
+    .split(' ')
+    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+    .join(' ')
 }

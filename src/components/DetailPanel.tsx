@@ -28,7 +28,7 @@ export function DetailPanel({
         <p className="panel-kicker">Perú</p>
         <h2 className="panel-title">Establecimientos de salud</h2>
         <p className="panel-lead">
-          Elige un departamento en el mapa o en la lista. Los puntos aparecen después del zoom.
+          Elige un departamento en el mapa o en la lista. El mapa de calles y los pines aparecen al entrar.
         </p>
         <ul className="dep-list">
           {departments.map((row) => (

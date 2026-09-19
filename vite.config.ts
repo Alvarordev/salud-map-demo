@@ -31,6 +31,9 @@ const renipressProxy: ProxyOptions = {
 
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    exclude: ['maplibre-gl'],
+  },
   server: {
     proxy: { '/registro-renipress-webapp': renipressProxy },
   },

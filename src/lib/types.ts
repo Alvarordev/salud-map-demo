@@ -21,6 +21,8 @@ export type FacilityProperties = {
   actualizado: string
   fuente: string
   urlRenipr: string
+  lng: number
+  lat: number
 }
 
 export type FacilityFeature = {
