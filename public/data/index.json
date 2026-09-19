@@ -1,0 +1,132 @@
+[
+  {
+    "NOMBDEP": "LIMA",
+    "count": 4451,
+    "file": "LIMA.geojson"
+  },
+  {
+    "NOMBDEP": "CAJAMARCA",
+    "count": 1223,
+    "file": "CAJAMARCA.geojson"
+  },
+  {
+    "NOMBDEP": "PIURA",
+    "count": 1000,
+    "file": "PIURA.geojson"
+  },
+  {
+    "NOMBDEP": "CUSCO",
+    "count": 783,
+    "file": "CUSCO.geojson"
+  },
+  {
+    "NOMBDEP": "JUNIN",
+    "count": 779,
+    "file": "JUNIN.geojson"
+  },
+  {
+    "NOMBDEP": "AREQUIPA",
+    "count": 656,
+    "file": "AREQUIPA.geojson"
+  },
+  {
+    "NOMBDEP": "PUNO",
+    "count": 640,
+    "file": "PUNO.geojson"
+  },
+  {
+    "NOMBDEP": "LORETO",
+    "count": 628,
+    "file": "LORETO.geojson"
+  },
+  {
+    "NOMBDEP": "AMAZONAS",
+    "count": 614,
+    "file": "AMAZONAS.geojson"
+  },
+  {
+    "NOMBDEP": "LA LIBERTAD",
+    "count": 562,
+    "file": "LA_LIBERTAD.geojson"
+  },
+  {
+    "NOMBDEP": "AYACUCHO",
+    "count": 536,
+    "file": "AYACUCHO.geojson"
+  },
+  {
+    "NOMBDEP": "SAN MARTIN",
+    "count": 527,
+    "file": "SAN_MARTIN.geojson"
+  },
+  {
+    "NOMBDEP": "ANCASH",
+    "count": 518,
+    "file": "ANCASH.geojson"
+  },
+  {
+    "NOMBDEP": "APURIMAC",
+    "count": 488,
+    "file": "APURIMAC.geojson"
+  },
+  {
+    "NOMBDEP": "HUANCAVELICA",
+    "count": 449,
+    "file": "HUANCAVELICA.geojson"
+  },
+  {
+    "NOMBDEP": "LAMBAYEQUE",
+    "count": 412,
+    "file": "LAMBAYEQUE.geojson"
+  },
+  {
+    "NOMBDEP": "HUANUCO",
+    "count": 404,
+    "file": "HUANUCO.geojson"
+  },
+  {
+    "NOMBDEP": "CALLAO",
+    "count": 400,
+    "file": "CALLAO.geojson"
+  },
+  {
+    "NOMBDEP": "PASCO",
+    "count": 325,
+    "file": "PASCO.geojson"
+  },
+  {
+    "NOMBDEP": "UCAYALI",
+    "count": 290,
+    "file": "UCAYALI.geojson"
+  },
+  {
+    "NOMBDEP": "TACNA",
+    "count": 276,
+    "file": "TACNA.geojson"
+  },
+  {
+    "NOMBDEP": "ICA",
+    "count": 231,
+    "file": "ICA.geojson"
+  },
+  {
+    "NOMBDEP": "MADRE DE DIOS",
+    "count": 194,
+    "file": "MADRE_DE_DIOS.geojson"
+  },
+  {
+    "NOMBDEP": "MOQUEGUA",
+    "count": 129,
+    "file": "MOQUEGUA.geojson"
+  },
+  {
+    "NOMBDEP": "TUMBES",
+    "count": 108,
+    "file": "TUMBES.geojson"
+  },
+  {
+    "NOMBDEP": "SIN_UBIGEO",
+    "count": 1,
+    "file": "SIN_UBIGEO.geojson"
+  }
+]
