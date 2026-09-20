@@ -56,7 +56,7 @@ export default function App() {
     let cancelled = false
     setFacilities([])
     const file = selectedDep.replaceAll(' ', '_')
-    void fetch(new URL(`/data/establecimientos/${file}.geojson`, window.location.origin))
+    void fetch(`/data/establecimientos/${file}.geojson`)
       .then((res) => res.json())
       .then((data: { features: { geometry: { coordinates: [number, number] }; properties: FacilityProperties }[] }) => {
         if (cancelled) return

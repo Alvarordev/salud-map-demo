@@ -31,6 +31,7 @@ const renipressProxy: ProxyOptions = {
 
 export default defineConfig({
   plugins: [react()],
+  worker: { format: 'es' },
   optimizeDeps: {
     exclude: ['maplibre-gl'],
   },

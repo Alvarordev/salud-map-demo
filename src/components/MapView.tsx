@@ -285,7 +285,7 @@ export function MapView({
     const observer = new ResizeObserver(resize)
     observer.observe(rootRef.current)
     resize()
-    void fetch(new URL('/data/departamentos.geojson', window.location.origin))
+    void fetch('/data/departamentos.geojson')
       .then((res) => res.json())
       .then((data: { crs?: unknown; features: DepartmentFeature[] }) => {
         delete data.crs
@@ -294,8 +294,8 @@ export function MapView({
           const src = map.getSource('departamentos') as GeoJSONSource | undefined
           src?.setData(data as never)
         }
-        apply()
-        if (!map.isStyleLoaded()) map.once('load', apply)
+        if (map.isStyleLoaded()) apply()
+        else map.once('load', apply)
       })
     return () => {
       observer.disconnect()
