@@ -11,3 +11,12 @@ export function matchesSectorFilter(f: FacilityProperties, filter: SectorFilter)
   if (filter === 'private') return isPrivateFacility(f)
   return !isPrivateFacility(f)
 }
+
+export function matchesQuery(f: FacilityProperties, query: string): boolean {
+  const q = query.trim().toLowerCase()
+  if (!q) return true
+  return [f.nombre, f.distrito, f.institucion, String(f.codigoMinsa ?? '')]
+    .join(' ')
+    .toLowerCase()
+    .includes(q)
+}

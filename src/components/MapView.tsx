@@ -10,7 +10,9 @@ import {
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { easeInOutStrong, prefersReducedMotion } from '../lib/easing'
+import { isPrivateFacility } from '../lib/facility'
 import { boundsFromCoordinates } from '../lib/geo'
+import { titleCase } from '../lib/title'
 import type { FacilityCollection, FacilityProperties } from '../lib/types'
 
 const PERU_BOUNDS: [number, number, number, number] = [-81.4, -18.45, -68.6, -0.04]
@@ -45,6 +47,7 @@ type Props = {
   selectedDep: string | null
   facility: FacilityProperties | null
   facilities: FacilityProperties[]
+  onBack?: () => void
   onSelectDepartment: (name: string) => void
   onSelectFacility: (facility: FacilityProperties) => void
 }
@@ -55,6 +58,7 @@ export function MapView({
   selectedDep,
   facility,
   facilities,
+  onBack,
   onSelectDepartment,
   onSelectFacility,
 }: Props) {
@@ -168,11 +172,27 @@ export function MapView({
       tooltip.style.top = `${pin.top - box.top}px`
     }
 
+    const showSelectedTooltip = () => {
+      const selected = facilityRef.current
+      if (!selected) {
+        hideTooltip()
+        return
+      }
+      const entry = pinsRef.current.get(String(selected.objectid))
+      if (!entry) {
+        hideTooltip()
+        return
+      }
+      showPinTooltip(entry.el, entry.el.dataset.label || selected.nombre)
+    }
+
     const placePins = (data: FacilityCollection) => {
       clearPins()
-      hideTooltip()
       const depName = selectedDepRef.current
-      if (!depName) return
+      if (!depName) {
+        hideTooltip()
+        return
+      }
       const depFeat = departmentsRef.current.find((f) => f.properties.NOMBDEP === depName)
       const clip = depFeat
         ? boundsFromCoordinates(depFeat.geometry.coordinates)
@@ -183,26 +203,35 @@ export function MapView({
         if (clip && !clip.contains([lng, lat])) continue
         const props: FacilityProperties = { ...feat.properties, lng, lat }
         const id = String(props.objectid)
+        const privatePin = isPrivateFacility(props)
         const el = document.createElement('button')
         el.type = 'button'
-        el.className = 'map-pin'
+        el.className = `map-pin ${privatePin ? 'is-private' : 'is-public'}`
         if (selected === id) el.classList.add('is-selected')
         const label = props.nombre || props.institucion || 'Establecimiento'
+        el.dataset.label = label
         el.setAttribute('aria-label', label)
         el.addEventListener('click', (ev) => {
           ev.stopPropagation()
-          hideTooltip()
           onSelectFacilityRef.current(props)
         })
         el.addEventListener('mouseenter', () => showPinTooltip(el, label))
-        el.addEventListener('mouseleave', hideTooltip)
+        el.addEventListener('mouseleave', () => {
+          if (facilityRef.current) showSelectedTooltip()
+          else hideTooltip()
+        })
         const marker = new Marker({ element: el, anchor: 'bottom' })
           .setLngLat([lng, lat])
           .addTo(map)
         pinsRef.current.set(id, { marker, el })
       }
+      if (facilityRef.current) showSelectedTooltip()
+      else hideTooltip()
     }
     placePinsRef.current = placePins
+    map.on('move', () => {
+      if (facilityRef.current) showSelectedTooltip()
+    })
 
     const tooltip = tooltipRef.current
 
@@ -380,7 +409,23 @@ export function MapView({
     for (const [id, { el }] of pinsRef.current) {
       el.classList.toggle('is-selected', id === selected)
     }
-  }, [facility])
+    const entry = selected ? pinsRef.current.get(selected) : undefined
+    const tooltip = tooltipRef.current
+    const root = rootRef.current
+    if (entry && tooltip && root) {
+      const pin = entry.el.getBoundingClientRect()
+      const box = root.getBoundingClientRect()
+      tooltip.hidden = false
+      tooltip.classList.add('is-pin')
+      tooltip.textContent = entry.el.dataset.label || facility?.nombre || ''
+      tooltip.style.left = `${pin.left - box.left + pin.width / 2}px`
+      tooltip.style.top = `${pin.top - box.top}px`
+    } else if (tooltip && !selectedDep) {
+      /* country hover owns the tooltip */
+    } else if (tooltip && !selected) {
+      tooltip.hidden = true
+    }
+  }, [facility, selectedDep])
 
   useEffect(() => {
     const map = mapRef.current
@@ -408,6 +453,11 @@ export function MapView({
 
   return (
     <div className={selectedDep ? 'map-root is-detail' : 'map-root is-country'}>
+      {onBack ? (
+        <button type="button" className="map-back" onClick={onBack} aria-label="Retroceder">
+          ←
+        </button>
+      ) : null}
       <div ref={rootRef} className="map-canvas" />
       <div ref={tooltipRef} className="map-tooltip" hidden />
     </div>
@@ -433,12 +483,4 @@ function toCollection(facilities: FacilityProperties[]): FacilityCollection {
       properties: f,
     })),
   }
-}
-
-function titleCase(value: string): string {
-  return value
-    .toLowerCase()
-    .split(' ')
-    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
-    .join(' ')
 }

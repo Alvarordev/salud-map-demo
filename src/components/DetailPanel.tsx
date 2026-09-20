@@ -1,5 +1,7 @@
-import { SectorFilterBar } from './SectorFilter'
+import { Breadcrumbs } from './Breadcrumbs'
+import { FacilityFilters } from './FacilityFilters'
 import { officialRenipressUrl, toProxiedRenipressUrl } from '../lib/renipress'
+import { titleCase } from '../lib/title'
 import type { SectorFilter } from '../lib/facility'
 import type { DepartmentIndex, FacilityProperties, PanelTab } from '../lib/types'
 
@@ -10,9 +12,13 @@ type Props = {
   departments: DepartmentIndex[]
   facilities: FacilityProperties[]
   totalFacilities: number
+  query: string
   sectorFilter: SectorFilter
+  onQuery: (value: string) => void
   onSectorFilter: (filter: SectorFilter) => void
   onTab: (tab: PanelTab) => void
+  onPeru: () => void
+  onDepartment: () => void
   onSelectDepartment: (name: string) => void
   onSelectFacility: (facility: FacilityProperties) => void
 }
@@ -24,16 +30,20 @@ export function DetailPanel({
   departments,
   facilities,
   totalFacilities,
+  query,
   sectorFilter,
+  onQuery,
   onSectorFilter,
   onTab,
+  onPeru,
+  onDepartment,
   onSelectDepartment,
   onSelectFacility,
 }: Props) {
   if (!department && !facility) {
     return (
       <aside className="panel">
-        <p className="panel-kicker">Perú</p>
+        <Breadcrumbs department={null} facilityName={null} onPeru={onPeru} onDepartment={onDepartment} />
         <h2 className="panel-title">Establecimientos de salud</h2>
         <p className="panel-lead">
           Elige un departamento en el mapa o en la lista. El mapa de calles y los pines aparecen al entrar.
@@ -55,16 +65,23 @@ export function DetailPanel({
   if (department && !facility) {
     return (
       <aside className="panel">
-        <p className="panel-kicker">Departamento</p>
+        <Breadcrumbs
+          department={department}
+          facilityName={null}
+          onPeru={onPeru}
+          onDepartment={onDepartment}
+        />
         <h2 className="panel-title">{titleCase(department)}</h2>
         <p className="panel-lead">
           Selecciona un establecimiento en el mapa o en la lista para ver la ficha y RENIPRESS.
         </p>
-        <SectorFilterBar
-          value={sectorFilter}
+        <FacilityFilters
+          query={query}
+          sector={sectorFilter}
           visible={facilities.length}
           total={totalFacilities}
-          onChange={onSectorFilter}
+          onQuery={onQuery}
+          onSector={onSectorFilter}
         />
         <ul className="dep-list">
           {facilities.map((row) => (
@@ -87,14 +104,12 @@ export function DetailPanel({
 
   return (
     <aside className="panel">
-      {department ? (
-        <SectorFilterBar
-          value={sectorFilter}
-          visible={facilities.length}
-          total={totalFacilities}
-          onChange={onSectorFilter}
-        />
-      ) : null}
+      <Breadcrumbs
+        department={department}
+        facilityName={facility.nombre || 'Sin nombre'}
+        onPeru={onPeru}
+        onDepartment={onDepartment}
+      />
       <div className="tab-bar" role="tablist" aria-label="Detalle">
         <button
           type="button"
@@ -123,10 +138,6 @@ export function DetailPanel({
           style={{ transform: tab === 'ficha' ? 'translateX(0)' : 'translateX(-50%)' }}
         >
           <div className="tab-pane" role="tabpanel">
-            <p className="panel-kicker">
-              {titleCase(facility.departamento)}
-              {facility.provincia ? ` · ${titleCase(facility.provincia)}` : ''}
-            </p>
             <h2 className="panel-title">{facility.nombre || 'Sin nombre'}</h2>
             <dl className="facts">
               <Fact label="Distrito" value={facility.distrito} />
@@ -171,12 +182,4 @@ function Fact({ label, value }: { label: string; value: string }) {
       <dd>{value}</dd>
     </div>
   )
-}
-
-function titleCase(value: string): string {
-  return value
-    .toLowerCase()
-    .split(' ')
-    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
-    .join(' ')
 }
