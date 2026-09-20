@@ -5,6 +5,9 @@ redeploy cuando recibe el webhook. El VPS no construye.
 
 Hay **un solo entorno**: push a `main` → imagen `prod-*` → una app Dokploy.
 
+URL pública:
+https://saludmapdemo-app-afgfow-c79cb2-178-156-230-233.sslip.io/
+
 Imagen: `ghcr.io/alvarordev/salud-map-demo`
 
 El contenedor es nginx en el puerto **80**: SPA estático más reverse-proxy de

@@ -2,6 +2,8 @@
 
 Demo de mapa: Perú por departamentos, zoom a los centros de un departamento, ficha a la derecha y pestaña RENIPRESS.
 
+Despliegue: [saludmapdemo-app-afgfow-c79cb2-178-156-230-233.sslip.io](https://saludmapdemo-app-afgfow-c79cb2-178-156-230-233.sslip.io/).
+
 ## Requisitos
 
 - Node 20+
